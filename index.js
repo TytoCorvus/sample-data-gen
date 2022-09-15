@@ -13,7 +13,8 @@ const config = require(args[2]),
         outFilePath = args[3] ?? 'outfile.json',
         toGenerate = args[4] ?? 1;
 
-// TODO: Build a configuration dependency map to prevent circular generation and stack overflow
+// TODO: Run a Depth First search on the config - 
+//  if any config is in the path more than once for any leaf, it HAS to be invalid to avoid cyclical dependencies
 
 const result = [];
 

@@ -62,6 +62,9 @@ factory.construct = (config) => {
     }
 
     switch(config.type){
+        case "reference": 
+            result = factory.construct(config.model);
+            break;
         case "number": 
             result = generateNumeral(config);
             break;
