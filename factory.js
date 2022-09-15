@@ -6,11 +6,11 @@ const factory = {};
 const generateNumeral = (config) => {
     /**
      * Config attributes:
-     * whole: boolean
+     * whole?: boolean
      *      True values mean only whole numbers are generated
-     * bounds: [ min, max ] 
-     *      Two numbers defining the upper and lower bounds of the number to be generated
-     * format: string
+     * bounds?: [ number, number ] 
+     *      Two numbers defining the lower and upper bounds (respectively) of the number to be generated
+     * format?: string
      *      A string defining the number format. Look at http://numeraljs.com for more info
      */
 
@@ -24,6 +24,11 @@ const generateNumeral = (config) => {
 }
 
 const generateWord = (config) => {
+    /**
+     * Config attributes:
+     * pool?: Array<string>
+     *      Array of values from which one will be selected randomly at a time (with replacement)
+     */
     if(config.pool){
         return selectFromPool(config.pool);
     } else {
@@ -32,12 +37,40 @@ const generateWord = (config) => {
     }
 }
 
-const generateArray = (config) => {
-    return [];
-}
+const generateSentence = (config) => {
+    /**
+     * Config attributes:
+     * pool?: Array<string>
+     *      Array of values from which one will be selected randomly at a time (with replacement)
+     * length?: number | [ number, number ] = [ 5, 10 ]
+     *      Number of words to be generated for the sentence. Length will be random between the two elements in the array if one is supplied.
+     *      Item 0 is expected to be the min, Item 1 is expected to be the max.
+     */
+    let length;
 
-const generateObject = (config) => {
-    
+    if(config.length && Array.isArray(config.length)){
+        const span = config.length[1] - config.length[0];
+        length = Math.floor(Math.random() * config) + config.length[0];
+    } else if (config.length){
+        length = config.length;
+    } else {
+        length = Math.floor(Math.random() * 5) + 5;
+    }
+
+    if(config.pool){
+        result = [];
+        for(var i = 0; i < length; i++){
+            result.push(selectFromPool(config.pool));
+        }
+        return result.join(' ');
+    } else {
+        return lorem.generateSentence({
+            wordsPerSentence: {
+                max: length,
+                min: length
+              }
+        })
+    }
 }
 
 const selectFromPool = (pool) => {
@@ -65,11 +98,19 @@ factory.construct = (config) => {
         case "reference": 
             result = factory.construct(config.model);
             break;
+        case "compound": 
+            components = config.components.map( component => factory.construct(component) )
+            result = components.join(config.separator ?? '');
+            break;
         case "number": 
             result = generateNumeral(config);
             break;
         case "word":
             result = generateWord(config);
+            break;
+        case "sentence":
+            result = generateSentence(config);
+            break;
         default:
             break;
     }
