@@ -50,7 +50,7 @@ const generateSentence = (config) => {
 
     if(config.length && Array.isArray(config.length)){
         const span = config.length[1] - config.length[0];
-        length = Math.floor(Math.random() * config) + config.length[0];
+        length = Math.floor(Math.random() * span) + config.length[0];
     } else if (config.length){
         length = config.length;
     } else {
@@ -64,13 +64,32 @@ const generateSentence = (config) => {
         }
         return result.join(' ');
     } else {
-        return lorem.generateSentence({
+        const lorem = new LoremIpsum({});
+        return lorem.generateSentences({
             wordsPerSentence: {
                 max: length,
                 min: length
               }
         })
     }
+}
+
+const generateDate = (config) => {
+    /**
+     * Config attributes:
+     *  dateMin: [yearMin: number, monthMin: number, dayMin: number]
+     *  dateMax: [yearMax: number, monthMax: number, dayMin: number]
+     */
+
+    if(!config.dateMin || !config.dateMax){
+        throw new Error('Date config provided without both dateMin and dateMax');
+    }
+
+    const dateMin = Number(new Date(...config.dateMin));
+    const dateMax = Number(new Date(...config.dateMax));
+
+    const resultDate = new Date(Math.random() * (dateMax - dateMin) + dateMin);
+    return resultDate.toString();
 }
 
 const selectFromPool = (pool) => {
@@ -110,6 +129,9 @@ factory.construct = (config) => {
             break;
         case "sentence":
             result = generateSentence(config);
+            break;
+        case "date":
+            result = generateDate(config);
             break;
         default:
             break;
